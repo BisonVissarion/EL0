@@ -16,7 +16,7 @@ func SendDataToNATS() {
 	defer nc.Close()
 
 	// Отправляем данные в NATS Streaming
-	contacts := []Contact{ // Убран лишний тип *Contact
+	contacts := []Contact{
 		{
 			ID:      1,
 			Name:    "John Doe",
