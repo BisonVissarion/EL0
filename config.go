@@ -23,8 +23,8 @@ type Contact struct {
 	Name, Address, Phone string
 	FavoritesJSON        types.JSONText    `db:"favorites"`
 	Favorites            *ContactFavorites `db:"-"`
-	CreatedAt            time.Time         `db:"createdat"`
-	UpdatedAt            time.Time         `db:"updatedat"`
+	CreatedAt            time.Time         `db:"created_at"`
+	UpdatedAt            time.Time         `db:"updated_at"`
 }
 
 var (

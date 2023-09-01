@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"flag"
-	"fmt"
 	"html/template"
 	"log"
 	"net/http"
@@ -40,6 +39,9 @@ func main() {
 			Phone:     "555-123-4567",
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
+			Favorites: &ContactFavorites{
+				Colors: []string{"Blue", "Green"},
+			},
 		},
 		{
 			ID:        2,
@@ -48,6 +50,9 @@ func main() {
 			Phone:     "555-987-6543",
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
+			Favorites: &ContactFavorites{
+				Colors: []string{"Red", "Yellow"},
+			},
 		},
 	}
 
@@ -86,28 +91,20 @@ func main() {
 	}
 	defer nc.Close()
 
-	_, err = nc.Subscribe("contacts", func(msg *nats.Msg) {
-		var receivedContacts []*Contact
-		err := json.Unmarshal(msg.Data, &receivedContacts)
+	for _, contact := range receivedContacts {
+		favoritesJSON, err := json.Marshal(contact.Favorites)
 		if err != nil {
-			log.Printf("Ошибка при разборе контактов: %v\n", err)
-			return
+			log.Printf("Ошибка при маршалинге Favorites в JSON: %v\n", err)
+			continue
 		}
 
-		fmt.Printf("Получены контакты: %+v\n", receivedContacts)
-	})
-	if err != nil {
-		log.Printf("Ошибка подписки: %v\n", err)
-	}
-	for _, contact := range receivedContacts {
-		query := "INSERT INTO contacts (id, name, address, created_at, updated_at, phone) VALUES ($1, $2, $3, $4, $5, $6)"
-		_, err := db.Exec(query, strconv.Itoa(contact.ID), contact.Name, contact.Address, contact.CreatedAt, contact.UpdatedAt, contact.Phone)
+		query := "INSERT INTO contacts (id, name, address, created_at, updated_at, phone, favorites) VALUES ($1, $2, $3, $4, $5, $6, $7)"
+		_, err = db.Exec(query, strconv.Itoa(contact.ID), contact.Name, contact.Address, contact.CreatedAt, contact.UpdatedAt, contact.Phone, string(favoritesJSON))
 		if err != nil {
 			log.Printf("Ошибка при вставке контакта в базу данных: %v\n", err)
 		} else {
 			log.Println("Контакт успешно сохранен в базе данных.")
 		}
-
 	}
 
 	// Настройка HTTP сервера
