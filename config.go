@@ -5,6 +5,7 @@ package main
 import (
 	"flag"
 	"html/template"
+	"time"
 
 	_ "github.com/jackc/pgx/stdlib"
 	"github.com/jmoiron/sqlx"
@@ -22,8 +23,8 @@ type Contact struct {
 	Name, Address, Phone string
 	FavoritesJSON        types.JSONText    `db:"favorites"`
 	Favorites            *ContactFavorites `db:"-"`
-	CreatedAt            string            `db:"created_at"`
-	UpdatedAt            string            `db:"updated_at"`
+	CreatedAt            time.Time         `db:"createdat"`
+	UpdatedAt            time.Time         `db:"updatedat"`
 }
 
 var (
